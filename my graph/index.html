@@ -1,0 +1,80 @@
+<html>
+<head>
+<script type="text/javascript"
+  src="dygraph-combined.js"></script>
+<script type="text/javascript" src="dygraph-combined.js"></script>
+</head>
+<body>
+<div id="graphdiv" style="width:1150px; height:550px;"></div>
+<p><b>Display: </b>
+    <input type=checkbox id=0 onClick="stockchange(this)" checked>
+    <label for="0"> Nominal</label>
+    <input type=checkbox id=1 onClick="stockchange(this)" checked>
+    <label for="1"> Real</label>
+</p>
+    <b>Zoom:</b>
+      <a href="#" onclick="zoom(3600)">hour</a>
+      <a href="#" onclick="zoom(86400)">day</a>
+      <a href="#" onclick="zoom(604800)">week</a>
+      <a href="#" onclick="zoom(30 * 86400)">1 month</a>
+      <a href="#" onclick="zoom(90 * 86400)">3 months</a>
+      <a href="#" onclick="zoom(180 * 86400)">6 months</a>
+      <a href="#" onclick="zoom(360 * 86400)">1 year</a>
+      <a href="#" onclick="zoom(1800 * 86400)">5 years</a>
+      <a href="#" onclick="zoom(3600 * 86400)">10 years</a>
+      <a href="#" onclick="reset()">full</a>
+    <script type="text/javascript">
+      g = new Dygraph(
+            document.getElementById("graphdiv"),
+            "dow.txt", {
+              title: ' Dow Jones Industrial Average',
+              ylabel: 'Dow Jones Industrial Average',
+              legend: 'always',
+              labelsDivStyles: { 'textAlign': 'right' },
+              showRangeSelector: true
+            }
+          );
+      
+      function stockchange(el) {
+        console.log(el.id);
+        g.setVisibility(el.id, el.checked);
+      }
+      var orig_range = null;
+      window.onload = function(){setTimeout(function(){orig_range = g.xAxisRange(),100})};
+      var desired_range = null;
+
+      function approach_range() {
+        if (!desired_range) return;
+        // go halfway there
+        var range = g.xAxisRange();
+        if (Math.abs(desired_range[0] - range[0]) < 60 &&
+            Math.abs(desired_range[1] - range[1]) < 60) {
+          
+          // (do not set another timeout.)
+        } else {
+          var new_range;
+          new_range = [0.5 * (desired_range[0] + range[0]),
+                       0.5 * (desired_range[1] + range[1])];
+          g.updateOptions({dateWindow: new_range});
+          animate();
+        }
+      }
+      function animate() {
+        setTimeout(approach_range, 10);
+      }
+
+      function zoom(res) {
+        var w = g.xAxisRange();
+        desired_range = [w[1]-res * 1000 , w[1] ];
+        animate();
+        return false;
+      }
+
+      function reset() {
+        desired_range = [ orig_range[0], orig_range[1]];;
+        animate();
+        return false;
+      }
+    </script>
+</body>
+</html>
